@@ -1,7 +1,7 @@
 # Big Data Project, ML w/ Spark, 5th Semester
 
 ## Timeline
-- [ ] [8 Nov] Choosing a Dataset
+- [x] [8 Nov] Choosing a Dataset
 - [ ] [??] Figure out stream.py
 - [ ] [??] Size of Batch
 - [ ] [??] Decide Preprocessing Techniques

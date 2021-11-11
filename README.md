@@ -2,7 +2,7 @@
 
 ## Timeline
 - [x] [8 Nov] Choosing a Dataset
-- [ ] [??] Figure out stream.py
+- [x] [11 Nov] Figure out stream.py
 - [ ] [??] Size of Batch
 - [ ] [??] Decide Preprocessing Techniques
 - [ ] [??] Implement them ^

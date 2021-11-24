@@ -5,6 +5,7 @@ from pyspark.sql import functions as F
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+import json
 #from textblob import TextBlob
 
 sc = SparkContext("local[2]", "NetworkWordCount")
@@ -23,12 +24,13 @@ def preprocessing(lines):
     words = words.withColumn('word', F.regexp_replace('word', ':', ''))
     words = words.withColumn('word', F.regexp_replace('word', '",', ''))
     words = words.withColumn('word', F.regexp_replace('word', '\\n', ''))
-    words = words.withColumn('Sen',words.word[0])
+    # words = words.withColumn('Sen',words.word[0])
     return words
 
 spark = SparkSession.builder.appName("TwitterSentimentAnalysis").getOrCreate()
 # read the tweet data from socket
 lines = spark.readStream.format("socket").option("host", "localhost").option("port", 6100).load()
+print(lines)
 BRO = preprocessing(lines)
 # words = preprocessing(lines)
 # Preprocess the data

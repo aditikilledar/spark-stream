@@ -4,7 +4,7 @@
 - [x] [8 Nov] Choosing a Dataset
 - [x] [11 Nov] Figure out stream.py
 - [ ] [??] Size of Batch
-- [ ] [??] Decide Preprocessing Techniques
+- [x] [??] Decide Preprocessing Techniques
 - [ ] [??] Implement them ^
 - [ ] [??] [Need to decide and implement them if these are necessary] feature selection, dimensionality reduction
 - [ ] [??] Reasoning for Preprocessing Steps

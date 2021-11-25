@@ -7,6 +7,8 @@ import re
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext, DStream
 from pyspark.sql import SQLContext, Row, SparkSession
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 # config
 sc = SparkContext("local[2]", "NetworkWordCount")
@@ -22,14 +24,34 @@ def preproc(item):
 	if len(item) > 2:
 		for i in item[2:]:
 			item[1] += i
-		item.pop()
+		item = item[:2]
 	# TODO preprocessing
+	#removing punctuation, @, RT, making it lower case
+	item[1] = re.sub('http\S+', '', item[1])
+	item[1] = re.sub('@\w+', '', item[1])
+	item[1] = re.sub('#', '', item[1])
+	item[1] = re.sub('RT', '', item[1])
+	item[1] = re.sub(':', '', item[1])
+	item[1] = re.sub('",', '', item[1])
+	item[1] = re.sub('\\n', '', item[1])
+	'''item[1] = re.sub(')', '', item[1])
+	item[1] = re.sub('(', '', item[1])
+	item[1] = re.sub('[', '', item[1])
+	item[1] = re.sub(']', '', item[1])
+	item[1] = re.sub('{', '', item[1])
+	item[1] = re.sub('}', '', item[1])'''
+	item[1] = re.sub(r'[^\w\s]', '', item[1])
+	item[1] = item[1].lower()
+	
+	# TODO lemmatization, stop word removal
 	return item
 
 lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line)).map(lambda x: x.split(','))
-lines.pprint()
-lines.map(lambda line: preproc(line)).pprint()
+#lines.pprint()
+preprocessed_lines = lines.map(lambda line: preproc(line))
+#preprocessed_lines.pprint()
+preprocessed_lines.foreachRDD(
 
 ssc.start()
 ssc.awaitTermination()

@@ -8,7 +8,8 @@
 - [x] [26 Nov] Implement them ^
 - [ ] [??] [Need to decide and implement them if these are necessary] feature selection, dimensionality reduction
 - [ ] [??] Reasoning for Preprocessing Steps
-- [ ] [??] Implement at least 3 classifiers on data; Decide which 3
+- [ ] [??] Decide which 3 Models
+- [ ] [??] Implement at least 3 classifiers on data
 - [ ] [??] Analyse each classifier, and figure out which classifier works best with particular type of data
 - [ ] [??] Hyperparameter Tuning
 - [ ] [??] Training Batch Size Tuning

@@ -7,8 +7,18 @@ import re
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext, DStream
 from pyspark.sql import SQLContext, Row, SparkSession
+import nltk
+# nltk.download('stopwords')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+ 
+lemmatizer = WordNetLemmatizer()
+stwords = stopwords.words('english')
+
+morestwords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+stwords += morestwords
 
 # config
 sc = SparkContext("local[2]", "NetworkWordCount")
@@ -34,14 +44,11 @@ def preproc(item):
 	item[1] = re.sub(':', '', item[1])
 	item[1] = re.sub('",', '', item[1])
 	item[1] = re.sub('\\n', '', item[1])
-	'''item[1] = re.sub(')', '', item[1])
-	item[1] = re.sub('(', '', item[1])
-	item[1] = re.sub('[', '', item[1])
-	item[1] = re.sub(']', '', item[1])
-	item[1] = re.sub('{', '', item[1])
-	item[1] = re.sub('}', '', item[1])'''
-	item[1] = re.sub(r'[^\w\s]', '', item[1])
+	item[1] = re.sub(r'[^\w\s]', ' ', item[1])
 	item[1] = item[1].lower()
+	item[1] = re.sub(r'\d+', '', item[1])
+	item[1] = [word for word in item[1].split(' ') if word not in stwords]
+	item[1] = [lemmatizer.lemmatize(word) for word in item[1] if word != '']
 	
 	# TODO lemmatization, stop word removal
 	return item
@@ -50,8 +57,6 @@ lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line)).map(lambda x: x.split(','))
 #lines.pprint()
 preprocessed_lines = lines.map(lambda line: preproc(line))
-#preprocessed_lines.pprint()
-preprocessed_lines.foreachRDD(
-
+preprocessed_lines.pprint()
 ssc.start()
 ssc.awaitTermination()

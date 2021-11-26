@@ -7,9 +7,11 @@ import re
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext, DStream
 from pyspark.sql import SQLContext, Row, SparkSession
+from pyspark.mllib.classification import NaiveBayes, NaiveBayesModel
+from pyspark.mllib.util import MLUtils
 import nltk
 # nltk.download('stopwords')
-nltk.download('wordnet')
+# nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -22,20 +24,27 @@ stwords += morestwords
 
 # config
 sc = SparkContext("local[2]", "NetworkWordCount")
+spark = SparkSession(sc)
 ssc = StreamingContext(sc, 1)
 sqc = SQLContext(sc)
+
+model = NaiveBayes()
 
 def clean(x):
 	x = x.replace('\\n', '')
 	x = x.replace('\\', '')
 	return x
 
+def preprocess(record, spark):
+	if not record.isEmpty():
+		df = spark.createDataFrame(record) 
+		df.show()
+
 def preproc(item):
 	if len(item) > 2:
 		for i in item[2:]:
 			item[1] += i
 		item = item[:2]
-	# TODO preprocessing
 	#removing punctuation, @, RT, making it lower case
 	item[1] = re.sub('http\S+', '', item[1])
 	item[1] = re.sub('@\w+', '', item[1])
@@ -50,13 +59,11 @@ def preproc(item):
 	item[1] = [word for word in item[1].split(' ') if word not in stwords]
 	item[1] = [lemmatizer.lemmatize(word) for word in item[1] if word != '']
 	
-	# TODO lemmatization, stop word removal
 	return item
 
 lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line)).map(lambda x: x.split(','))
-#lines.pprint()
 preprocessed_lines = lines.map(lambda line: preproc(line))
-preprocessed_lines.pprint()
+preprocessed_lines.foreachRDD(lambda rdd: preprocess(rdd, spark))
 ssc.start()
 ssc.awaitTermination()

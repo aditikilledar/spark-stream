@@ -5,7 +5,7 @@
 - [x] [11 Nov] Figure out stream.py
 - [ ] [??] Size of Batch
 - [x] [24 Nov] Decide Preprocessing Techniques
-- [ ] [??] Implement them ^
+- [x] [26 Nov] Implement them ^
 - [ ] [??] [Need to decide and implement them if these are necessary] feature selection, dimensionality reduction
 - [ ] [??] Reasoning for Preprocessing Steps
 - [ ] [??] Implement at least 3 classifiers on data; Decide which 3

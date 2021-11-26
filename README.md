@@ -15,8 +15,7 @@
 - [ ] [??] Predict Classification of Test Data Using Model
 - [ ] [??] Metrics to Evaluate Classifier
 - [ ] [??] Compute Performance of the Classifier using Metric chosen
-
-
+- [ ] [??] Clustering
 
 
 # Helpful Links:

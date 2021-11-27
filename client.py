@@ -11,8 +11,8 @@ from pyspark.mllib.classification import NaiveBayes, NaiveBayesModel
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.util import MLUtils
 import nltk
-# nltk.download('stopwords')
-# nltk.download('wordnet')
+nltk.download('stopwords')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -38,10 +38,10 @@ def clean(x):
 	return x
 
 def preprocess(record, spark):
-	if not record.isEmpty():
+	'''if not record.isEmpty():
 		df = spark.createDataFrame(record) 
-		df.show()
-		model.train(record)
+		df.show()'''
+		#model.train(record)
 
 def preproc(item):
 	if len(item) > 2:
@@ -61,13 +61,19 @@ def preproc(item):
 	item[1] = re.sub(r'\d+', '', item[1])
 	item[1] = [word for word in item[1].split(' ') if word not in stwords]
 	item[1] = [lemmatizer.lemmatize(word) for word in item[1] if word != '']
-	
+	#item[0] = re.sub('\'', '', item[0])
+	print(f'c{item[0]}c')
+	if item[0] != 'Sentiment':
+		item[0] = float(item[0])
 	return item
 
 lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line)).map(lambda x: x.split(','))
 preprocessed_lines = lines.map(lambda line: preproc(line))
-preprocessed_lines.foreachRDD(lambda rdd: preprocess(rdd, spark))
-
+#preprocessed_lines.pprint()
+#preprocessed_lines.foreachRDD(lambda rdd: preprocess(rdd, spark))
+# TODO remove 'sentiment', 'tweet' (not manually)
+labelled_points = preprocessed_lines.map(lambda line: LabeledPoint(line[0], line[1]))
+labelled_points.pprint()
 ssc.start()
 ssc.awaitTermination()

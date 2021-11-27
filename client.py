@@ -8,6 +8,7 @@ from pyspark import SparkContext
 from pyspark.streaming import StreamingContext, DStream
 from pyspark.sql import SQLContext, Row, SparkSession
 from pyspark.mllib.classification import NaiveBayes, NaiveBayesModel
+from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.util import MLUtils
 import nltk
 # nltk.download('stopwords')
@@ -28,6 +29,7 @@ spark = SparkSession(sc)
 ssc = StreamingContext(sc, 1)
 sqc = SQLContext(sc)
 
+global model
 model = NaiveBayes()
 
 def clean(x):
@@ -39,6 +41,7 @@ def preprocess(record, spark):
 	if not record.isEmpty():
 		df = spark.createDataFrame(record) 
 		df.show()
+		model.train(record)
 
 def preproc(item):
 	if len(item) > 2:
@@ -65,5 +68,6 @@ lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line)).map(lambda x: x.split(','))
 preprocessed_lines = lines.map(lambda line: preproc(line))
 preprocessed_lines.foreachRDD(lambda rdd: preprocess(rdd, spark))
+
 ssc.start()
 ssc.awaitTermination()

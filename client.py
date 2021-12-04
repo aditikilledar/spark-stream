@@ -10,6 +10,7 @@ from pyspark.sql import SQLContext, Row, SparkSession
 from pyspark.mllib.classification import NaiveBayes, NaiveBayesModel
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.util import MLUtils
+from pyspark.ml.feature import StopWordsRemover, Word2Vec, RegexTokenizer
 import nltk
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -40,11 +41,6 @@ def clean(x):
 	x = x.replace('\\', '')
 	return x
 
-def preprocess(record, spark):
-	if not record.isEmpty():
-		df = spark.createDataFrame(record) 
-		df.show()
-
 def preproc(item):
 	#removing punctuation, @, RT, making it lower case
 	item = re.sub('http\S+', '', item)
@@ -66,18 +62,24 @@ def preproc(item):
 	
 	return nitem
 
+def get_pred(tweet):
+	try:
+		tweet = tweet.filter(lambda x: len(x) > 0)
+		rowRdd = tweet.map(lambda w: Row(tweet=w))
+		df = spark.createDataFrame(rowRdd)
+		df.show()
+	except:
+		pass
+
 lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line))
 text_dstream = lines.map(lambda tweet: tweet[2:])
 #lines.pprint()
 sentiment_dstream = lines.map(lambda tweet: tweet[0])
 preprocessed_lines = text_dstream.map(lambda line: preproc(line))
+preprocessed_lines.pprint()
+preprocessed_lines.foreachRDD(get_pred)
 #preprocessed_lines.foreachRDD(lambda rdd: rdd.collect())
-
-vectorized_lines = preprocessed_lines.transform(lambda rdd: preprocess(rdd, spark))
-vectorized_lines.pprint()
-
-
 # TODO remove 'sentiment', 'tweet' (not manually)
 #labelled_points = preprocessed_lines.map(lambda line: LabeledPoint(line[0], line[1]))
 #labelled_points.pprint()

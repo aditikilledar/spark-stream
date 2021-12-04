@@ -16,6 +16,7 @@ nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from sklearn.feature_extraction.text import HashingVectorizer
  
 lemmatizer = WordNetLemmatizer()
 stwords = stopwords.words('english')
@@ -31,6 +32,8 @@ sqc = SQLContext(sc)
 
 global model
 model = NaiveBayes()
+global vectorizer
+vectorizer = HashingVectorizer(norm = None, alternate_sign = False)
 
 def clean(x):
 	x = x.replace('\\n', '')
@@ -38,42 +41,45 @@ def clean(x):
 	return x
 
 def preprocess(record, spark):
-	'''if not record.isEmpty():
+	if not record.isEmpty():
 		df = spark.createDataFrame(record) 
-		df.show()'''
-		#model.train(record)
+		df.show()
 
 def preproc(item):
-	if len(item) > 2:
-		for i in item[2:]:
-			item[1] += i
-		item = item[:2]
 	#removing punctuation, @, RT, making it lower case
-	item[1] = re.sub('http\S+', '', item[1])
-	item[1] = re.sub('@\w+', '', item[1])
-	item[1] = re.sub('#', '', item[1])
-	item[1] = re.sub('RT', '', item[1])
-	item[1] = re.sub(':', '', item[1])
-	item[1] = re.sub('",', '', item[1])
-	item[1] = re.sub('\\n', '', item[1])
-	item[1] = re.sub(r'[^\w\s]', ' ', item[1])
-	item[1] = item[1].lower()
-	item[1] = re.sub(r'\d+', '', item[1])
-	item[1] = [word for word in item[1].split(' ') if word not in stwords]
-	item[1] = [lemmatizer.lemmatize(word) for word in item[1] if word != '']
+	item = re.sub('http\S+', '', item)
+	item = re.sub('@\w+', '', item)
+	item = re.sub('#', '', item)
+	item = re.sub('RT', '', item)
+	item = re.sub(':', '', item)
+	item = re.sub('",', '', item)
+	item = re.sub('\\n', '', item)
+	item = re.sub(r'[^\w\s]', ' ', item)
+	item = item.lower()
+	item = re.sub(r'\d+', '', item)
+	item = [word for word in item.split(' ') if word not in stwords]
+	item = [lemmatizer.lemmatize(word) for word in item if word != '']
+	nitem = ''
+	for word in item:
+		nitem += ' ' + word
 	#item[0] = re.sub('\'', '', item[0])
-	print(f'c{item[0]}c')
-	if item[0] != 'Sentiment':
-		item[0] = float(item[0])
-	return item
+	
+	return nitem
 
 lines = ssc.socketTextStream('localhost', 6100)
-lines = lines.flatMap(lambda line: json.loads(line)).map(lambda x: x.split(','))
-preprocessed_lines = lines.map(lambda line: preproc(line))
-#preprocessed_lines.pprint()
-#preprocessed_lines.foreachRDD(lambda rdd: preprocess(rdd, spark))
+lines = lines.flatMap(lambda line: json.loads(line))
+text_dstream = lines.map(lambda tweet: tweet[2:])
+#lines.pprint()
+sentiment_dstream = lines.map(lambda tweet: tweet[0])
+preprocessed_lines = text_dstream.map(lambda line: preproc(line))
+#preprocessed_lines.foreachRDD(lambda rdd: rdd.collect())
+
+vectorized_lines = preprocessed_lines.transform(lambda rdd: preprocess(rdd, spark))
+vectorized_lines.pprint()
+
+
 # TODO remove 'sentiment', 'tweet' (not manually)
-labelled_points = preprocessed_lines.map(lambda line: LabeledPoint(line[0], line[1]))
-labelled_points.pprint()
+#labelled_points = preprocessed_lines.map(lambda line: LabeledPoint(line[0], line[1]))
+#labelled_points.pprint()
 ssc.start()
 ssc.awaitTermination()

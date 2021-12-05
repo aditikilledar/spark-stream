@@ -1,14 +1,19 @@
-'''
-Om Arham Mukha Kamal Vaasinee Paapaatma Kshayam Kaari Vad Vad Vaagwaadinee Saraswati Aing Hreeng Namah Swaaha 
-'''
+# SENTIMENT ANALYSIS
+
+import time # Just to compare fit times
+import numpy as np
 import pickle
 import sys
 import json
 import re
+import nltk
+nltk.download('stopwords')
+nltk.download('wordnet')
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext, DStream
 from pyspark.sql import SQLContext, Row, SparkSession
 from pyspark.sql.functions import lit
+
 from pyspark.ml.classification import NaiveBayes, DecisionTreeClassifier, LogisticRegression, GBTClassifier, LinearSVC, RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.linear_model import SGDClassifier
@@ -16,17 +21,21 @@ from sklearn.cluster import MiniBatchKMeans
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.util import MLUtils
 from pyspark.ml.feature import StopWordsRemover, Word2Vec, RegexTokenizer, CountVectorizer, HashingTF
-import nltk
-nltk.download('stopwords')
-nltk.download('wordnet')
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import HashingVectorizer
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
-import numpy as np
+
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+
+# hyperparams tuning
+# from sklearn.model_selection import TuneSearchCV # :( says it's illegal
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder, TrainValidationSplit 
+# Train Valid split better than crossValid in most cases
+from pyspark.mllib.evaluation import BinaryClassificationMetrics
  
 lemmatizer = WordNetLemmatizer()
 stwords = stopwords.words('english')
@@ -93,6 +102,45 @@ def get_pred(tweet):
 		print('SKSGD: ', sksgd_model.score(X, Y))
 		print()
 		
+		'''
+		parameters = {'alpha': [1e-4, 1e-1, 1], 'epsilon':[0.01, 0.1]}
+		
+		tune_search = TuneGridSearchCV(  # <-------- does not work for some reason, worth exploring
+    		SGDClassifier(),
+    		parameters,
+    		early_stopping=True,
+    		max_iters=10
+		)
+
+		start = time.time()
+		tune_search.fit(X, Y)
+		end = time.time()
+		print("Tune Fit Time:", end - start)
+		pred = tune_search.predict(X)
+		accuracy = np.count_nonzero(np.array(pred) == np.array(Y)) / len(pred)
+		print("Tune Accuracy:", accuracy)
+		'''
+		'''
+		paramGrid = ParamGridBuilder()\
+    		.addGrid(lr.regParam, [0.1, 0.01]) \
+    		.addGrid(lr.fitIntercept, [False, True])\
+    		.addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0])\
+    		.build()
+
+# In this case the estimator is simply the linear regression.
+# A TrainValidationSplit requires an Estimator, a set of Estimator ParamMaps, and an Evaluator.
+		tvs = TrainValidationSplit(estimator=,
+                       estimatorParamMaps=paramGrid,
+                       evaluator=RegressionEvaluator(),
+                           # 80% of the data will be used for training, 20% for validation.
+                       trainRatio=0.8)
+
+# Run TrainValidationSplit, and choose the best set of parameters.
+		# model = tvs.fit(train)
+		tvs_model = tvs.partial_fit(X, Y, classes=np.unique(Y))
+		print('TVS SKGSCD: ', tvs.score(X, Y))
+		print()
+		'''
 
 lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line))

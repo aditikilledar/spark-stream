@@ -9,9 +9,9 @@
 - [x] [24 Nov] Decide Preprocessing Techniques
 - [x] [26 Nov] Implement them ^
 - [ ] [??] [Need to decide and implement them if these are necessary] feature selection, dimensionality reduction
-- [ ] [??] Reasoning for Preprocessing Steps
-- [ ] [??] Decide which 3 Models
-- [ ] [??] Implement at least 3 classifiers on data
+- [x] [4 Dec] Reasoning for Preprocessing Steps
+- [x] [4 Dec] Decide which 3 Models
+- [x] [4 Dec] Implement at least 3 classifiers on data
 - [ ] [??] Analyse each classifier, and figure out which classifier works best with particular type of data
 - [ ] [??] Hyperparameter Tuning
 - [ ] [??] Training Batch Size Tuning

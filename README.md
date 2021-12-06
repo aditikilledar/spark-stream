@@ -5,20 +5,19 @@
 ## Timeline
 - [x] [8 Nov] Choosing a Dataset
 - [x] [11 Nov] Figure out stream.py
-- [ ] [??] Size of Batch
+- [x] [25 Nov] Size of Batch
 - [x] [24 Nov] Decide Preprocessing Techniques
 - [x] [26 Nov] Implement them ^
-- [ ] [??] [Need to decide and implement them if these are necessary] feature selection, dimensionality reduction
 - [x] [4 Dec] Reasoning for Preprocessing Steps
 - [x] [4 Dec] Decide which 3 Models
 - [x] [4 Dec] Implement at least 3 classifiers on data
-- [ ] [??] Analyse each classifier, and figure out which classifier works best with particular type of data
-- [ ] [??] Hyperparameter Tuning
-- [ ] [??] Training Batch Size Tuning
-- [ ] [??] Predict Classification of Test Data Using Model
-- [ ] [??] Metrics to Evaluate Classifier
-- [ ] [??] Compute Performance of the Classifier using Metric chosen
-- [ ] [??] Clustering
+- [x] [6 Dec] Analyse each classifier, and figure out which classifier works best with particular type of data
+- [ ] [6 Dec] Hyperparameter Tuning
+- [ ] [6 Dec] Training Batch Size Tuning
+- [ ] [6 Dec] Predict Classification of Test Data Using Model
+- [ ] [6 Dec] Metrics to Evaluate Classifier
+- [ ] [6 Dec] Compute Performance of the Classifier using Metric chosen
+- [ ] [6 Dec] Clustering
 
 
 # Helpful Links:

@@ -17,8 +17,8 @@
 - [x] [6 Dec] Predict Classification of Test Data Using Model
 - [x] [6 Dec] Metrics to Evaluate Classifier
 - [x] [6 Dec] Compute Performance of the Classifier using Metric chosen
-- [ ] [6 Dec] Clustering
-
+- [x] [6 Dec] Clustering
+- [ ] [6 Dec] Add Project Report to the repository
 
 # Helpful Links:
 - Streaming Programming Guide https://spark.apache.org/docs/latest/streaming-programming-guide.html

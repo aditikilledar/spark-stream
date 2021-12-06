@@ -1,6 +1,4 @@
-'''
-Om Arham Mukha Kamal Vaasinee Paapaatma Kshayam Kaari Vad Vad Vaagwaadinee Saraswati Aing Hreeng Namah Swaaha 
-'''
+'''Testing module'''
 import pickle
 import sys
 import json
@@ -96,4 +94,3 @@ tweets = lines.map(lambda tweet: Row(label=float(tweet[0]),Tweet=preproc(tweet[2
 tweets.foreachRDD(get_pred)
 ssc.start()
 ssc.awaitTermination()
-

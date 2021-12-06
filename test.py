@@ -50,7 +50,7 @@ global skbnb_model
 global sksgd_model
 sknb_model = pickle.load(open('NaiveBayes.sav','rb'))
 skbnb_model = pickle.load(open('BernoulliBayes.sav','rb'))
-sksgd_model = pickle.load(open('SKSGD.sav'), 'rb')
+sksgd_model = pickle.load(open('SKSGD.sav', 'rb'))
 
 def preproc(item):
 	#removing punctuation, @, RT, making it lower case

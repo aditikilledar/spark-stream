@@ -49,8 +49,9 @@ sksgd_model = pickle.load(open('./models/SKSGD.sav', 'rb'))
 km_model = pickle.load(open('./models/KMeans.sav', 'rb'))
 
 def get_pred(tweet):
-	"""Prediction Driver"""
-	#print('hi')
+	"""
+		Testing Driver
+	"""
 	if not tweet.isEmpty():
 		df = spark.createDataFrame(tweet)
 		label_list = df.select('label').collect()
@@ -58,25 +59,27 @@ def get_pred(tweet):
 		result = vectorizer.transform(df)
 		feature_list = result.select('features').collect()
 		X = [row.features.toArray() for row in feature_list]
-		print('NaiveBayes: ',sknb_model.score(X, Y))
-		#nb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
+
+		print('----------Multinomial Naive Bayes----------')
+		#print('NaiveBayes: ',sknb_model.score(X, Y))
+		nb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
 		#nb_conf = confusion_matrix(Y, sknb_model.predict(X), labels=np.unique(Y))
 		#print('Confusion_Matrix: ', nb_conf)
-		#print(nb_report)
-		
-		print('BernoulliBayes: ',skbnb_model.score(X, Y))
-		#nb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
+		print('Report: ', nb_report)
+
+		print('----------Bernoulli Naive Bayes----------')
+		#print('BernoulliBayes: ',skbnb_model.score(X, Y))
+		nb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
 		#skbnb_conf = confusion_matrix(Y, sknb_model.predict(X), labels=np.unique(Y))
 		#print('Confusion_Matrix: ', skbnb_conf)
-		#print(skbnb_report)
+		print('Report: ', skbnb_report)
 		
-		print('SKSGD: ', sksgd_model.score(X, Y))
-		#sksgd_report = classification_report(Y, sksgd_model.predict(X), labels=np.unique(Y))
+		print('----------SGD----------')
+		#print('SKSGD: ', sksgd_model.score(X, Y))
+		sksgd_report = classification_report(Y, sksgd_model.predict(X), labels=np.unique(Y))
 		#sksgd_conf = confusion_matrix(Y, sksgd_model.predict(X), labels=np.unique(Y))
 		#print('Confusion Matrix: ', sksgd_conf)
-		#print(sksgd_report)
-		#points = km_model.predict(X)
-		print('KMeans score: ', km_model.score(X, Y))
+		print('Report: ', sksgd_report)
 		print()
 		
 # Driver Code

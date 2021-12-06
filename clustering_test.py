@@ -1,10 +1,9 @@
-'''Testing module'''
+'''Cluster Testing module'''
 # Utility Modules
 import pickle
 import sys
 import json
 import numpy as np
-import re
 from preprocess import preproc
 
 # Spark boilerplate
@@ -19,13 +18,7 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 # Vectorizer
-from pyspark.ml.feature import StopWordsRemover, Word2Vec, RegexTokenizer, CountVectorizer, HashingTF
-from sklearn.feature_extraction.text import HashingVectorizer
-
-# Performance Metrics
-from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
-from pyspark.ml.evaluation import BinaryClassificationEvaluator
-from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.feature import HashingTF
 
 # config
 sc = SparkContext("local[2]", "NetworkWordCount")
@@ -43,8 +36,9 @@ global km_model
 km_model = pickle.load(open('./models/KM.sav', 'rb'))
 
 def get_pred(tweet):
-	"""Prediction Driver"""
-	#print('hi')
+	"""
+		Prediction Driver
+	"""
 	if not tweet.isEmpty():
 		df = spark.createDataFrame(tweet)
 		label_list = df.select('label').collect()
@@ -65,4 +59,3 @@ tweets = lines.map(lambda tweet: Row(label=float(tweet[0]),Tweet=preproc(tweet[2
 tweets.foreachRDD(get_pred)
 ssc.start()
 ssc.awaitTermination()
-

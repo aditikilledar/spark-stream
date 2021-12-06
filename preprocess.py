@@ -14,8 +14,8 @@ stwords += morestwords
 
 def preproc(item):
 	'''
-	removes stop words and punctuation from string and lemmatizes the words
-	returns: list of words
+		removes stop words and punctuation from string and lemmatizes the words
+		returns: list of words
 	'''
 	item = re.sub('http\S+', '', item)
 	item = re.sub('@\w+', '', item)
@@ -34,4 +34,3 @@ def preproc(item):
 		nitem += word + ' '
 	
 	return nitem
-

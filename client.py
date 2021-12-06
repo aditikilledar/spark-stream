@@ -12,14 +12,9 @@ nltk.download('wordnet')
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext, DStream
 from pyspark.sql import SQLContext, Row, SparkSession
-from pyspark.sql.functions import lit
-
-from pyspark.ml.classification import NaiveBayes, DecisionTreeClassifier, LogisticRegression, GBTClassifier, LinearSVC, RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.linear_model import SGDClassifier
 from sklearn.cluster import MiniBatchKMeans
-from pyspark.mllib.regression import LabeledPoint
-from pyspark.mllib.util import MLUtils
 from pyspark.ml.feature import StopWordsRemover, Word2Vec, RegexTokenizer, CountVectorizer, HashingTF
 
 from nltk.corpus import stopwords
@@ -51,7 +46,7 @@ sqc = SQLContext(sc)
 
 global vectorizer
 vectorizer = HashingTF(inputCol='Tweet', outputCol='features')
-vectorizer.setNumFeatures(10)
+vectorizer.setNumFeatures(150)
 
 global sknb
 global skbnb
@@ -62,6 +57,7 @@ global sksgd_model
 sknb = MultinomialNB()
 skbnb = BernoulliNB()
 sksgd = SGDClassifier()
+km = MiniBatchKMeans(n_clusters=2)
 
 def preproc(item):
 	#removing punctuation, @, RT, making it lower case
@@ -101,46 +97,6 @@ def get_pred(tweet):
 		sksgd_model = sksgd.partial_fit(X, Y, classes=np.unique(Y))
 		print('SKSGD: ', sksgd_model.score(X, Y))
 		print()
-		
-		'''
-		parameters = {'alpha': [1e-4, 1e-1, 1], 'epsilon':[0.01, 0.1]}
-		
-		tune_search = TuneGridSearchCV(  # <-------- does not work for some reason, worth exploring
-    		SGDClassifier(),
-    		parameters,
-    		early_stopping=True,
-    		max_iters=10
-		)
-
-		start = time.time()
-		tune_search.fit(X, Y)
-		end = time.time()
-		print("Tune Fit Time:", end - start)
-		pred = tune_search.predict(X)
-		accuracy = np.count_nonzero(np.array(pred) == np.array(Y)) / len(pred)
-		print("Tune Accuracy:", accuracy)
-		'''
-		'''
-		paramGrid = ParamGridBuilder()\
-    		.addGrid(lr.regParam, [0.1, 0.01]) \
-    		.addGrid(lr.fitIntercept, [False, True])\
-    		.addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0])\
-    		.build()
-
-# In this case the estimator is simply the linear regression.
-# A TrainValidationSplit requires an Estimator, a set of Estimator ParamMaps, and an Evaluator.
-		tvs = TrainValidationSplit(estimator=,
-                       estimatorParamMaps=paramGrid,
-                       evaluator=RegressionEvaluator(),
-                           # 80% of the data will be used for training, 20% for validation.
-                       trainRatio=0.8)
-
-# Run TrainValidationSplit, and choose the best set of parameters.
-		# model = tvs.fit(train)
-		tvs_model = tvs.partial_fit(X, Y, classes=np.unique(Y))
-		print('TVS SKGSCD: ', tvs.score(X, Y))
-		print()
-		'''
 
 lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line))

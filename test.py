@@ -69,7 +69,7 @@ def get_pred(tweet):
 
 		print('----------Bernoulli Naive Bayes----------')
 		#print('BernoulliBayes: ',skbnb_model.score(X, Y))
-		sknb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
+		skbnb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
 		#skbnb_conf = confusion_matrix(Y, sknb_model.predict(X), labels=np.unique(Y))
 		#print('Confusion_Matrix: ', skbnb_conf)
 		print('Report: ', skbnb_report)
@@ -90,4 +90,3 @@ tweets = lines.map(lambda tweet: Row(label=float(tweet[0]),Tweet=preproc(tweet[2
 tweets.foreachRDD(get_pred)
 ssc.start()
 ssc.awaitTermination()
-

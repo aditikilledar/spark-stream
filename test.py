@@ -1,36 +1,31 @@
 '''Testing module'''
+# Utility Modules
 import pickle
 import sys
 import json
+import numpy as np
 import re
+from preprocess import preproc
+
+# Spark boilerplate
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext, DStream
 from pyspark.sql import SQLContext, Row, SparkSession
-from pyspark.sql.functions import lit
-from pyspark.ml.classification import NaiveBayes, DecisionTreeClassifier, LogisticRegression, GBTClassifier, LinearSVC, RandomForestClassifier
+
+# Classifiers
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.linear_model import SGDClassifier
 from sklearn.cluster import MiniBatchKMeans
-from pyspark.mllib.regression import LabeledPoint
-from pyspark.mllib.util import MLUtils
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Vectorizer
 from pyspark.ml.feature import StopWordsRemover, Word2Vec, RegexTokenizer, CountVectorizer, HashingTF
-import nltk
-nltk.download('stopwords')
-nltk.download('wordnet')
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import HashingVectorizer
+
+# Performance Metrics
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
-import numpy as np
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
- 
-lemmatizer = WordNetLemmatizer()
-stwords = stopwords.words('english')
-
-morestwords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-stwords += morestwords
 
 # config
 sc = SparkContext("local[2]", "NetworkWordCount")
@@ -38,41 +33,23 @@ spark = SparkSession(sc)
 ssc = StreamingContext(sc, 1)
 sqc = SQLContext(sc)
 
+# Vectorizer
 global vectorizer
 vectorizer = HashingTF(inputCol='Tweet', outputCol='features')
-vectorizer.setNumFeatures(500)
+vectorizer.setNumFeatures(1000)
 
-global sknb
-global skbnb
-global sksgd
+# Models
 global sknb_model
 global skbnb_model
 global sksgd_model
-sknb_model = pickle.load(open('NaiveBayes.sav','rb'))
-skbnb_model = pickle.load(open('BernoulliBayes.sav','rb'))
-sksgd_model = pickle.load(open('SKSGD.sav', 'rb'))
-
-def preproc(item):
-	#removing punctuation, @, RT, making it lower case
-	item = re.sub('http\S+', '', item)
-	item = re.sub('@\w+', '', item)
-	item = re.sub('#', '', item)
-	item = re.sub('RT', '', item)
-	item = re.sub(':', '', item)
-	item = re.sub('",', '', item)
-	item = re.sub('\\n', '', item)
-	item = re.sub(r'[^\w\s]', ' ', item)
-	item = item.lower()
-	item = re.sub(r'\d+', '', item)
-	item = [word for word in item.split(' ') if word not in stwords]
-	item = [lemmatizer.lemmatize(word) for word in item if word != '']
-	nitem = ''
-	for word in item:
-		nitem += word + ' '
-	
-	return nitem
+global km_model
+sknb_model = pickle.load(open('./models/NaiveBayes.sav','rb'))
+skbnb_model = pickle.load(open('./models/BernoulliBayes.sav','rb'))
+sksgd_model = pickle.load(open('./models/SKSGD.sav', 'rb'))
+km_model = pickle.load(open('./models/KMeans.sav', 'rb'))
 
 def get_pred(tweet):
+	"""Prediction Driver"""
 	#print('hi')
 	if not tweet.isEmpty():
 		df = spark.createDataFrame(tweet)
@@ -82,11 +59,27 @@ def get_pred(tweet):
 		feature_list = result.select('features').collect()
 		X = [row.features.toArray() for row in feature_list]
 		print('NaiveBayes: ',sknb_model.score(X, Y))
+		#nb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
+		#nb_conf = confusion_matrix(Y, sknb_model.predict(X), labels=np.unique(Y))
+		#print('Confusion_Matrix: ', nb_conf)
+		#print(nb_report)
+		
 		print('BernoulliBayes: ',skbnb_model.score(X, Y))
+		#nb_report = classification_report(Y, sknb_model.predict(X), labels=np.unique(Y))
+		#skbnb_conf = confusion_matrix(Y, sknb_model.predict(X), labels=np.unique(Y))
+		#print('Confusion_Matrix: ', skbnb_conf)
+		#print(skbnb_report)
+		
 		print('SKSGD: ', sksgd_model.score(X, Y))
+		#sksgd_report = classification_report(Y, sksgd_model.predict(X), labels=np.unique(Y))
+		#sksgd_conf = confusion_matrix(Y, sksgd_model.predict(X), labels=np.unique(Y))
+		#print('Confusion Matrix: ', sksgd_conf)
+		#print(sksgd_report)
+		#points = km_model.predict(X)
+		print('KMeans score: ', km_model.score(X, Y))
 		print()
 		
-
+# Driver Code
 lines = ssc.socketTextStream('localhost', 6100)
 lines = lines.flatMap(lambda line: json.loads(line))
 lines = lines.filter(lambda line: line[0] != 'S')
@@ -94,3 +87,4 @@ tweets = lines.map(lambda tweet: Row(label=float(tweet[0]),Tweet=preproc(tweet[2
 tweets.foreachRDD(get_pred)
 ssc.start()
 ssc.awaitTermination()
+

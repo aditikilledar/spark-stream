@@ -42,7 +42,7 @@ sqc = SQLContext(sc)
 
 global vectorizer
 vectorizer = HashingTF(inputCol='Tweet', outputCol='features')
-vectorizer.setNumFeatures(10)
+vectorizer.setNumFeatures(500)
 
 global sknb
 global skbnb
@@ -52,7 +52,7 @@ global skbnb_model
 global sksgd_model
 sknb_model = pickle.load(open('NaiveBayes.sav','rb'))
 skbnb_model = pickle.load(open('BernoulliBayes.sav','rb'))
-sksgd = SGDClassifier()
+sksgd_model = pickle.load(open('SKSGD.sav'), 'rb')
 
 def preproc(item):
 	#removing punctuation, @, RT, making it lower case
@@ -75,7 +75,7 @@ def preproc(item):
 	return nitem
 
 def get_pred(tweet):
-	print('hi')
+	#print('hi')
 	if not tweet.isEmpty():
 		df = spark.createDataFrame(tweet)
 		label_list = df.select('label').collect()
@@ -85,6 +85,8 @@ def get_pred(tweet):
 		X = [row.features.toArray() for row in feature_list]
 		print('NaiveBayes: ',sknb_model.score(X, Y))
 		print('BernoulliBayes: ',skbnb_model.score(X, Y))
+		print('SKSGD: ', sksgd_model.score(X, Y))
+		print()
 		
 
 lines = ssc.socketTextStream('localhost', 6100)
@@ -94,3 +96,4 @@ tweets = lines.map(lambda tweet: Row(label=float(tweet[0]),Tweet=preproc(tweet[2
 tweets.foreachRDD(get_pred)
 ssc.start()
 ssc.awaitTermination()
+

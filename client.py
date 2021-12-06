@@ -46,7 +46,7 @@ sqc = SQLContext(sc)
 
 global vectorizer
 vectorizer = HashingTF(inputCol='Tweet', outputCol='features')
-vectorizer.setNumFeatures(150)
+vectorizer.setNumFeatures(500)
 
 global sknb
 global skbnb
@@ -96,6 +96,7 @@ def get_pred(tweet):
 		print('SKBNB: ', skbnb_model.score(X, Y))
 		sksgd_model = sksgd.partial_fit(X, Y, classes=np.unique(Y))
 		print('SKSGD: ', sksgd_model.score(X, Y))
+		pickle.dump(sksgd, open('SKSGD.sav','wb'))
 		print()
 
 lines = ssc.socketTextStream('localhost', 6100)
@@ -105,3 +106,4 @@ tweets = lines.map(lambda tweet: Row(label=float(tweet[0]),Tweet=preproc(tweet[2
 tweets.foreachRDD(get_pred)
 ssc.start()
 ssc.awaitTermination()
+

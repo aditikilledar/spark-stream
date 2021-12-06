@@ -12,11 +12,11 @@
 - [x] [4 Dec] Decide which 3 Models
 - [x] [4 Dec] Implement at least 3 classifiers on data
 - [x] [6 Dec] Analyse each classifier, and figure out which classifier works best with particular type of data
-- [ ] [6 Dec] Hyperparameter Tuning
-- [ ] [6 Dec] Training Batch Size Tuning
-- [ ] [6 Dec] Predict Classification of Test Data Using Model
-- [ ] [6 Dec] Metrics to Evaluate Classifier
-- [ ] [6 Dec] Compute Performance of the Classifier using Metric chosen
+- [x] [6 Dec] Hyperparameter Tuning
+- [x] [6 Dec] Training Batch Size Tuning
+- [x] [6 Dec] Predict Classification of Test Data Using Model
+- [x] [6 Dec] Metrics to Evaluate Classifier
+- [x] [6 Dec] Compute Performance of the Classifier using Metric chosen
 - [ ] [6 Dec] Clustering
 
 
